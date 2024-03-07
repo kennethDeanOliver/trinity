@@ -15,6 +15,8 @@ export default class HelloWorldScene extends Phaser.Scene
 
         this.cursors = undefined   
         this.grounded = true
+
+        this.start = false
     }
     preload(){
         this.load.image('background', 'images/background.png')
@@ -29,8 +31,14 @@ export default class HelloWorldScene extends Phaser.Scene
 
         this.base = this.physics.add.staticGroup()
         this.base.create(400, 568, 'base').setScale(2).refreshBody()
-        // this.platforms = this.physics.add.staticGroup()
-        // this.platforms.create(400, 568, 'platform').setScale(2).refreshBody()
+
+        this.platforms = this.physics.add.group({
+            key: 'platform',
+            repeat: 0,
+            setXY: {x: 400, y: 400, stepX: 100},
+            setScale: {x: 0.5, y: 0.5}
+        })
+        this.physics.add.collider(this.base, this.platforms)
 
         this.obstacles = this.physics.add.group({
             key: 'obstacle',
@@ -38,12 +46,12 @@ export default class HelloWorldScene extends Phaser.Scene
             setXY: {x: 200, y: 470, stepX: 100},
             setScale: {x: 0.5, y: 0.5}
         })
-        this.physics.add.collider(this.obstacles, this.base)
+        this.physics.add.collider(this.base, this.obstacles)
 
         this.player = this.physics.add.sprite(100, 468, 'Tulip').setScale(0.25)
         this.player.setCollideWorldBounds(true)
-        this.physics.add.collider(this.player, this.base)
-        this.physics.add.collider(this.obstacles, this.player)
+        this.physics.add.collider(this.base, this.player)
+        this.physics.add.collider(this.player, this.obstacles)
         this.anims.create({
             key: 'running away',
             frames: this.anims.generateFrameNumbers('Tulip', {start: 1, end: 4}),
@@ -53,7 +61,7 @@ export default class HelloWorldScene extends Phaser.Scene
 
         this.companion = this.physics.add.sprite(200, 502, 'Atticus').setScale(0.25)
         this.companion.setCollideWorldBounds(true)
-        this.physics.add.collider(this.companion, this.base)
+        this.physics.add.collider(this.base, this.companion)
         this.physics.add.overlap(this.player, this.companion)
         this.anims.create({
             key: 'a tourginia of corginia',
@@ -65,14 +73,19 @@ export default class HelloWorldScene extends Phaser.Scene
         this.cursors = this.input.keyboard.createCursorKeys()
     }
     update(){
-        this.player.setVelocityX(50)
-        this.player.anims.play('running away', true)
-        this.companion.setVelocityX(80)
-        this.companion.anims.play('a tourginia of corginia', true)
-        if (this.cursors.up.isDown && this.grounded){
-            this.player.setVelocityY(-200)
-            this.grounded = false
-            this.time.delayedCall(2000, this.endJump, [], this)
+        if (this.cursors.space.isDown){
+            this.start = true
+        }
+        if (this.start){
+            this.player.setVelocityX(50)
+            this.player.anims.play('running away', true)
+            this.companion.setVelocityX(80)
+            this.companion.anims.play('a tourginia of corginia', true)
+            if (this.cursors.up.isDown && this.grounded){
+                this.player.setVelocityY(-200)
+                this.grounded = false
+                this.time.delayedCall(2000, this.endJump, [], this)
+            }
         }
     }
     endJump(){
