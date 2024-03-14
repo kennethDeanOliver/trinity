@@ -32,26 +32,22 @@ export default class HelloWorldScene extends Phaser.Scene
         this.base = this.physics.add.staticGroup()
         this.base.create(400, 568, 'base').setScale(2).refreshBody()
 
-        this.platforms = this.physics.add.group({
-            key: 'platform',
-            repeat: 0,
-            setXY: {x: 400, y: 400, stepX: 100},
-            setScale: {x: 0.5, y: 0.5}
-        })
-        this.physics.add.collider(this.base, this.platforms)
+        this.platforms = this.physics.add.staticGroup()
+        this.platforms.create(400, 470, 'platform').setScale(0.25).refreshBody()
 
         this.obstacles = this.physics.add.group({
             key: 'obstacle',
-            repeat: 5,
-            setXY: {x: 200, y: 470, stepX: 100},
-            setScale: {x: 0.5, y: 0.5}
+            repeat: 2,
+            setXY: {x: 300, y: 500, stepX: 100},
+            setScale: {x: 0.25, y: 0.25}
         })
         this.physics.add.collider(this.base, this.obstacles)
 
         this.player = this.physics.add.sprite(100, 468, 'Tulip').setScale(0.25)
         this.player.setCollideWorldBounds(true)
         this.physics.add.collider(this.base, this.player)
-        this.physics.add.collider(this.player, this.obstacles)
+        this.physics.add.overlap(this.player, this.obstacles, this.gameOver, null, true)
+        this.physics.add.collider(this.player, this.platforms)
         this.anims.create({
             key: 'running away',
             frames: this.anims.generateFrameNumbers('Tulip', {start: 1, end: 4}),
@@ -62,7 +58,7 @@ export default class HelloWorldScene extends Phaser.Scene
         this.companion = this.physics.add.sprite(200, 502, 'Atticus').setScale(0.25)
         this.companion.setCollideWorldBounds(true)
         this.physics.add.collider(this.base, this.companion)
-        this.physics.add.overlap(this.player, this.companion)
+        this.physics.add.overlap(this.player, this.companion, this.escape, null, true)
         this.anims.create({
             key: 'a tourginia of corginia',
             frames: this.anims.generateFrameNumbers('Atticus', {start: 1, end: 4}),
@@ -77,12 +73,13 @@ export default class HelloWorldScene extends Phaser.Scene
             this.start = true
         }
         if (this.start){
-            this.player.setVelocityX(50)
+            this.player.setVelocityX(80)
             this.player.anims.play('running away', true)
             this.companion.setVelocityX(80)
             this.companion.anims.play('a tourginia of corginia', true)
+            this.obstacles.setVelocityX(-20)
             if (this.cursors.up.isDown && this.grounded){
-                this.player.setVelocityY(-200)
+                this.player.setVelocityY(-300)
                 this.grounded = false
                 this.time.delayedCall(2000, this.endJump, [], this)
             }
@@ -90,5 +87,11 @@ export default class HelloWorldScene extends Phaser.Scene
     }
     endJump(){
         this.grounded = true
+    }
+    gameOver(){
+        this.scene.stop
+    }
+    escape(){
+        this.scene.stop
     }
 }
